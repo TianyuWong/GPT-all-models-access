@@ -136,5 +136,3 @@ exports.handler = (req, res) => {
   `);
 };
 ```
-
-Please note that you need to replace `process.env.OPENAI_API_KEY` with your own OpenAI API key. Also, if you want to protect the API using an access password, you need to set the `ACCESS_PASSWORD` environment variable to the desired password.
