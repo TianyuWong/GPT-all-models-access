@@ -1,0 +1,140 @@
+Sure, here is the final, all-in-one version of the code that you can use to paste and deploy:
+
+```javascript
+const { createCanvas, loadImage } = require("canvas");
+const querystring = require("querystring");
+const openai = require("openai");
+
+// Add your OpenAI API key here
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+// Create a new OpenAI instance
+const openaiInstance = new openai(OPENAI_API_KEY);
+
+// Define the supported engines
+const engines = {
+  "davinci": "default",
+  "curie": "content-filter-alpha-c4",
+  "babbage": "text-davinci-002",
+  "ada": "davinci-instruct-beta",
+};
+
+const generateText = async (prompt, engine) => {
+  const model = engines[engine];
+  const parameters = {
+    prompt: prompt,
+    model: model,
+  };
+  const response = await openaiInstance.completions.create(parameters);
+  return response.data.choices[0].text.trim();
+};
+
+const drawImage = async (text, temperature, maxTokens) => {
+  // Generate the image URL
+  const imageUrl = `https://dummyimage.com/600x400/000000/ffffff.png&text=${querystring.escape(text)}&temperature=${temperature}&max_tokens=${maxTokens}`;
+
+  // Load the image
+  const image = await loadImage(imageUrl);
+
+  // Create a canvas
+  const canvas = createCanvas(600, 400);
+  const context = canvas.getContext("2d");
+
+  // Draw the image on the canvas
+  context.drawImage(image, 0, 0, 600, 400);
+
+  // Return the canvas as a buffer
+  return canvas.toBuffer();
+};
+
+// Handle HTTP requests
+exports.handler = async (req, res) => {
+  // Get the query parameters
+  const { prompt, engine, temperature, maxTokens } = req.query;
+
+  // Check if the required parameters are present
+  if (!prompt || !engine || !temperature || !maxTokens) {
+    res.status(400).send("Missing required query parameters");
+    return;
+  }
+
+  // Generate the text
+  const text = await generateText(prompt, engine);
+
+  // Generate the image
+  const image = await drawImage(text, temperature, maxTokens);
+
+  // Set the response headers
+  res.setHeader("Content-Type", "image/png");
+  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+
+  // Send the image
+  res.send(image);
+};
+
+// Add access control
+exports.handler = (req, res) => {
+  // Get the configured access password
+  const accessPassword = process.env.ACCESS_PASSWORD;
+
+  // Check if the access password is set
+  if (!accessPassword) {
+    res.status(500).send("Access password is not set");
+    return;
+  }
+
+  // Get the provided access password
+  const providedPassword = req.headers["x-access-password"];
+
+  // Check if the provided access password is correct
+  if (providedPassword !== accessPassword) {
+    res.status(403).send("Invalid access password");
+    return;
+  }
+
+  // Continue handling the request
+  exports.handler(req, res);
+};
+
+// Add user interface
+exports.handler = (req, res) => {
+  res.send(`
+    <html>
+      <head>
+        <title>AI Image Generator</title>
+      </head>
+      <body>
+        <h1>AI Image Generator</h1>
+        <form action="/" method="GET">
+          <div>
+            <label for="prompt">Prompt:</label>
+            <input type="text" id="prompt" name="prompt" required>
+          </div>
+          <div>
+            <label for="engine">Engine:</label>
+            <select id="engine" name="engine" required>
+              <option value="davinci">Davinci</option>
+              <option value="curie">Curie</option>
+              <option value="babbage">Babbage</option>
+              <option value="ada">Ada</option>
+            </select>
+          </div>
+          <div>
+            <label for="temperature">Temperature:</label>
+            <input type="number" id="temperature" name="temperature" value="0.5" required step="0.1" min="0" max="1">
+          </div>
+          <div>
+            <label for="maxTokens">Max Tokens:</label>
+            <input type="number" id="maxTokens" name="maxTokens" value="50" required step="1" min="1" max="100">
+          </div>
+          <div>
+            <input type="submit" value="Generate">
+          </div>
+        </form>
+      </body>
+    </html>
+  `);
+};
+```
+
+Please note that you need to replace `process.env.OPENAI_API_KEY` with your own OpenAI API key. Also, if you want to protect the API using an access password, you need to set the `ACCESS_PASSWORD` environment variable to the desired password.
