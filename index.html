@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>OpenAI Text Generator</title>
+  <style>
+    body {
+      font-family: '微软雅黑', sans-serif;
+    }
+
+    #prompt-text {
+      margin-bottom: 10px;
+    }
+
+    #generate-form {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    #generate-form input, #generate-form select {
+      margin-bottom: 10px;
+      padding: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #fff;
+    }
+
+    #generate-form button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #1e90ff;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    #output-text {
+      margin-top: 10px;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>OpenAI Text Generator</h1>
+  <form id="generate-form">
+    <label for="model">选择模型:</label>
+    <select name="model" id="model">
+      <option value="davinci">Davinci</option>
+      <option value="curie">Curie</option>
+      <option value="babbage">Babbage</option>
+      <option value="ada">Ada</option>
+    </select>
+    <label for="prompt-text">输入提示文本:</label>
+    <textarea name="prompt" id="prompt-text" rows="5" cols="40"></textarea>
+    <label for="length">输入字数:</label>
+    <input type="number" name="length" id="length" value="100">
+    <label for="temperature">输入温度:</label>
+    <input type="number" step="0.1" name="temperature" id="temperature" value="0.5">
+    <button type="submit">生成文本</button>
+  </form>
+  <div id="output-text"></div>
+  <script>
+    const form = document.querySelector('#generate-form');
+    const output = document.querySelector('#output-text');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const model = form.elements['model'].value;
+      const prompt = form.elements['prompt'].value;
+      const length = form.elements['length'].value;
+      const temperature = form.elements['temperature'].value;
+
+      const response = await fetch('/api/generate-text', {
+        method: 'POST',
+        headers: {
+          'Authorization': process.env.PASSWORD,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ model, prompt, length, temperature })
+      });
+
+      if (response.status === 401) {
+        output.innerText = 'Unauthorized access.';
+        return;
+      }
+
+      const { text } = await response.json();
+
+      output.innerText = text;
+    });
+  </script>
+</body>
+</html>
