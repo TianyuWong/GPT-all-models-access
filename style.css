@@ -1,0 +1,33 @@
+form {
+  border: 2px solid #ddd;
+  padding: 20px;
+  border-radius: 5px;
+  width: 50%;
+  margin: auto;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+input[type="text"], input[type="password"] {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #f4f4f4;
+  margin-bottom: 20px;
+}
+
+input[type="submit"] {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #008CBA;
+  color: white;
+  cursor: pointer;  
+}
+
+input[type="submit"]:hover {
+  background-color: #006080;
+}
