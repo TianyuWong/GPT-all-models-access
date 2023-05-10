@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "functions": {
+    "api/generate-text": {
+      "handler": "index.js",
+      "environment": {
+        "PASSWORD": "$PASSWORD",
+        "OPENAI_API_KEY": "$OPENAI_API_KEY"
+      },
+      "events": [
+        {
+          "http": {
+            "method": "post",
+            "path": "/api/generate-text"
+          }
+        }
+      ]
+    }
+  },
+  "builds": {
+    "api/generate-text": {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  }
+}
